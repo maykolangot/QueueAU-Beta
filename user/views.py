@@ -2193,6 +2193,7 @@ LOG_FILE_PATH = os.path.join(settings.BASE_DIR, 'logs/django_events.log')
 
 
 
+
 def log_viewer(request):
     user_id = request.session.get('user_id')
     if not user_id:
@@ -2207,20 +2208,24 @@ def log_viewer(request):
     log_entries = []
 
     if os.path.exists(LOG_FILE_PATH):
-        with open(LOG_FILE_PATH, "r") as log_file:
-            for line in reversed(log_file.readlines()):
-                # Skip GET request logs
-                if "GET /" in line:
-                    continue
-                if query and query not in line.lower():
-                    continue
-                if level_filter and f"{level_filter}" not in line:
-                    continue
-                log_entries.append(line.strip())
+        try:
+            with open(LOG_FILE_PATH, "r", encoding="utf-8", errors="replace") as log_file:
+                for line in reversed(log_file.readlines()):
+                    # Skip GET request logs
+                    if "GET /" in line:
+                        continue
+                    if query and query not in line.lower():
+                        continue
+                    if level_filter and f"{level_filter}" not in line:
+                        continue
+                    log_entries.append(line.strip())
+        except Exception as e:
+            log_entries.append(f"Error reading log file: {e}")
 
     return render(request, "admin/partials/log_viewer.html", {
         "logs": log_entries[:500],  # limit to latest 500
         "query": query,
         "level": level_filter
     })
+
 
