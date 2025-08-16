@@ -31,78 +31,27 @@ def generate_otp(length=6):
 class OTPForm(forms.Form):
     otp = forms.CharField(label="Enter the OTP sent to your email", max_length=6)
 
-
-# Rather than sending the QR to the Student, generate the QR when successfully registered
-def register_student(request, token=None):
-    session_key = f'student_token_{token}' if token else None
-
+def register_student(request):
     if request.method == 'POST':
-        # OTP verification
-        if 'verify_otp' in request.POST and token:
-            otp_form = OTPForm(request.POST)
-            session_data = request.session.get(session_key)
+        form = StudentRegistrationForm(request.POST)
+        if form.is_valid():
+            with transaction.atomic():
+                student = form.save(commit=False)
+                student.qrId = generate_qr_id()
+                student.save()
 
-            if otp_form.is_valid() and session_data:
-                user_otp = otp_form.cleaned_data['otp']
-                if user_otp == session_data['otp']:
-                    form_data = session_data['form_data']
-                    form = StudentRegistrationForm(form_data)
-
-                    if form.is_valid():
-                        with transaction.atomic():
-                            student = form.save(commit=False)
-                            student.qrId = generate_qr_id()
-                            student.save()
-
-                        # Clean up session
-                        del request.session[session_key]
-
-                        messages.success(
-                            request,
-                            "Student registered successfully! QR code is shown below."
-                        )
-                        return redirect(reverse('student_success', args=[student.id]))
-                    else:
-                        messages.error(request, "Internal form data is invalid.")
-                else:
-                    messages.error(request, "Incorrect OTP. Please try again.")
-
-            return render(request, 'request/register_student.html', {'otp_form': otp_form})
-
-        # Registration form submission (initial POST)
+            messages.success(
+                request,
+                "Student registered successfully! QR code is shown below."
+            )
+            return redirect(reverse('student_success', args=[student.id]))
         else:
-            form = StudentRegistrationForm(request.POST)
-            if form.is_valid():
-                otp = generate_otp()
-                token = str(uuid.uuid4())
-                session_key = f'student_token_{token}'
-                request.session[session_key] = {
-                    'form_data': request.POST,
-                    'otp': otp,
-                }
+            return render(request, 'request/register_student.html', {
+                'form': form,
+                'recaptcha_site_key': settings.RECAPTCHA_SITE_KEY,
+            })
 
-                # Send OTP to student email
-                email = EmailMessage(
-                    subject='Your Verification Code',
-                    body=f'Hello {form.cleaned_data["name"]},\n\nYour verification code is: {otp}',
-                    from_email='noreply@phinmaed.com',
-                    to=[form.cleaned_data['email']],
-                )
-                email.send(fail_silently=False)
-
-                messages.info(request, "A verification code was sent to your email.")
-                return redirect(f'/student_register={token}/')
-            else:
-                return render(request, 'request/register_student.html', {
-                    'form': form,
-                    'recaptcha_site_key': settings.RECAPTCHA_SITE_KEY,
-                })
-
-    # GET request (either first-time or after redirect)
-    if token:
-        otp_form = OTPForm()
-        return render(request, 'request/register_student.html', {'otp_form': otp_form})
-
+    # GET request → show registration form
     form = StudentRegistrationForm()
     return render(request, 'request/register_student.html', {
         'form': form,
@@ -140,6 +89,8 @@ def student_success(request, student_id):
         'student': student,
         'qr_code': qr_base64,
     })
+
+
 
 
 '''
@@ -479,3 +430,4 @@ def recover_qr(request):
         form = QRRecoveryForm()
 
     return render(request, 'request/recover_qr.html', {'form': form})
+
