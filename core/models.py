@@ -101,7 +101,7 @@ class Student(models.Model):
     YEAR_LEVEL_CHOICES = [(i, f'Year {i}') for i in range(1, 6)]
 
     name = models.CharField("Student Name", max_length=120)
-    studentId = models.PositiveBigIntegerField(unique=True)
+    studentId = models.CharField(max_length=14, unique=True)
     email = models.EmailField("Email Address", unique=True)
     roles = models.CharField("Role", max_length=10, default='student')
 
