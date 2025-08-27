@@ -4,6 +4,7 @@ from django.core.validators import RegexValidator
 from django.contrib.auth.hashers import make_password
 
 
+
 class StudentRegistrationForm(forms.ModelForm):
     CAMPUS_CHOICES = [
         ('Main', 'Main'),
@@ -40,32 +41,46 @@ class StudentRegistrationForm(forms.ModelForm):
 
     class Meta:
         model = Student
-        fields = ['name', 'studentId', 'email', 'department', 'course', 'campus', 'year_level', 'priority_request']
+        fields = [
+            'name',
+            'studentId',   # ⚠️ Ensure model field matches this name
+            'email',
+            'department',
+            'course',
+            'campus',
+            'year_level',
+            'priority_request',
+        ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # Dynamically load courses based on department
         if 'department' in self.data:
             try:
                 department_id = int(self.data.get('department'))
-                self.fields['course'].queryset = Course.objects.filter(department_id=department_id).order_by('name')
+                self.fields['course'].queryset = Course.objects.filter(
+                    department_id=department_id
+                ).order_by('name')
             except (ValueError, TypeError):
                 pass
         elif self.instance.pk and hasattr(self.instance, 'department'):
-            self.fields['course'].queryset = Course.objects.filter(department=self.instance.department)
+            self.fields['course'].queryset = Course.objects.filter(
+                department=self.instance.department
+            )
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        if not email.endswith('@phinmaed.com'):
+        if email and not email.endswith('@phinmaed.com'):
             raise forms.ValidationError("Only @phinmaed.com emails are allowed.")
         return email
 
     def clean_studentId(self):
-        """Remove dashes before saving to DB"""
+        """Normalize studentId by removing dashes"""
         student_id = self.cleaned_data.get('studentId')
         if student_id:
-            cleaned_id = student_id.replace("-", "")
-            return cleaned_id
+            student_id_str = str(student_id)  # Ensure string before replace
+            return student_id_str.replace("-", "")
         return student_id
 
     def clean(self):
@@ -73,12 +88,15 @@ class StudentRegistrationForm(forms.ModelForm):
         email = cleaned_data.get("email")
         student_id = cleaned_data.get("studentId")
 
-        if Student.objects.filter(email=email).exists():
+        # Unique email (ignore self when editing)
+        if email and Student.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
             self.add_error("email", "This email is already registered.")
 
-        if student_id and Student.objects.filter(studentId=student_id).exists():
+        # Unique student ID (ignore self when editing)
+        if student_id and Student.objects.filter(studentId=student_id).exclude(pk=self.instance.pk).exists():
             self.add_error("studentId", "This ID number is already registered.")
 
+        return cleaned_data
 
 class NewEnrolleeForm(forms.ModelForm):
     class Meta:
