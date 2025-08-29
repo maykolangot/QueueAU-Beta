@@ -1,4 +1,3 @@
-{% load static %}
 
 
 <!DOCTYPE html>
@@ -173,29 +172,65 @@
          width: 100%;
          margin: 0;
          padding: 1rem 5%;
-         padding-bottom: 5rem; 
+         padding-bottom: 1rem;
        }
   
         .page-title {
          text-align: center;
          position: relative;
+         padding: 1rem 1.5rem;
+         background: rgba(255, 255, 255, 0.1);
+         border-radius: 15px;
+         backdrop-filter: blur(10px);
+         border: 1px solid rgba(255, 255, 255, 0.2);
+         margin-bottom: 1.5rem;
+         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+         display: block;
+         width: fit-content;
+         margin-left: auto;
+         margin-right: auto;
        }
   
         .page-title h2 {
-           font-size: 2.5rem;
+           font-size: 2rem;
            font-weight: 900;
-           color: var(--text-primary);
+           color: #ffffff;
            letter-spacing: -0.025em;
-           background: linear-gradient(135deg, #969fb7, #198038);
-           -webkit-background-clip: text;
-           -webkit-text-fill-color: transparent;
-           background-clip: text;
-         }
+           text-shadow: 
+             0 2px 4px rgba(0, 0, 0, 0.3),
+             0 4px 8px rgba(0, 0, 0, 0.2),
+             0 8px 16px rgba(0, 0, 0, 0.1);
+           margin-bottom: 0.25rem;
+           position: relative;
+           z-index: 10;
+        }
+        
+        .page-title h2::after {
+           content: '';
+           position: absolute;
+           bottom: -15px;
+           left: 50%;
+           transform: translateX(-50%);
+           width: 80px;
+           height: 4px;
+           background: linear-gradient(90deg, 
+             rgba(255, 193, 7, 0.8) 0%, 
+             rgba(247, 183, 49, 0.8) 50%, 
+             rgba(255, 193, 7, 0.8) 100%);
+           border-radius: 2px;
+           box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+        }
   
       .page-title p {
-        color: var(--text-secondary);
-        font-size: 1.125rem;
-        font-weight: 500;
+        color: #ffffff;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-shadow: 
+          0 1px 2px rgba(0, 0, 0, 0.4),
+          0 2px 4px rgba(0, 0, 0, 0.3);
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 10;
       }
   
              /* Now Serving Section */
@@ -335,7 +370,7 @@
          padding: 1rem;
          box-shadow: var(--shadow-xl);
          border: 1px solid rgba(255, 255, 255, 0.2);
-         height: calc(100vh - 280px);
+         height: calc(95vh - 280px);
          overflow-y: auto;
          backdrop-filter: blur(15px);
          position: relative;
