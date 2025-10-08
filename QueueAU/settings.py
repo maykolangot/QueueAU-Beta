@@ -19,7 +19,7 @@ SECRET_KEY = 'django-insecure-%mhsz76ph5v_8^xl8wj$zo=wz&#-cyv_*dirc%p_p9oe#%_!ui
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "queueau-beta.onrender.com"]
 
 
 # Application definition
@@ -230,4 +230,5 @@ CELERY_REDIS_BACKEND_USE_SSL = {
 TWILIO_ACCOUNT_SID = 'AC956827098b8a33dba0e2eea01e1a9eb1'
 TWILIO_AUTH_TOKEN = 'd3512f94f4e34216128aa975447803ee'
 TWILIO_VERIFY_SERVICE_SID = 'VA7035f58098dd270d44718b5b5f3918d3'
+
 
