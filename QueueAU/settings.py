@@ -138,13 +138,25 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # SMTP Settings
 
 
-EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.sendgrid.net')
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# Common SMTP settings
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'apikey')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() in ('true', '1', 't')
+
+# Dynamically load Gmail accounts
+EMAIL_ACCOUNTS = []
+i = 1
+while True:
+    user = os.getenv(f'EMAIL{i}_USER')
+    password = os.getenv(f'EMAIL{i}_PASS')
+    if not user or not password:
+        break
+    EMAIL_ACCOUNTS.append({
+        "EMAIL_HOST_USER": user,
+        "EMAIL_HOST_PASSWORD": password
+    })
+    i += 1
 
 
 """
@@ -224,5 +236,6 @@ CELERY_BROKER_USE_SSL = {
 CELERY_REDIS_BACKEND_USE_SSL = {
     'ssl_cert_reqs': ssl.CERT_NONE
 }
+
 
 
